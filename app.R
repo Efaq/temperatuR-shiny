@@ -16,14 +16,28 @@ moving_average = function(input, pivot){
 }
 
 ui <- fluidPage(
-  plotOutput(outputId = "plot"),
-  selectInput(
-    inputId = "kommun_selection",
-    label = "Select a kommun to search for measurements",
-    choices = sorted_kommun_list
+  sidebarLayout(
+    sidebarPanel(
+      "First, select a kommun of interest. Then, select a measurement
+      station. Temperatures will be shown with hourly granularity
+      in black, with a moving average in red.
+      You can adjust the moving average range.",
+      "If no data is available for the chosen station, a blank
+      plot will be returned.",
+      selectInput(
+        inputId = "kommun_selection",
+        label = "Kommun",
+        choices = sorted_kommun_list
+      ),
+      uiOutput("id_selection_renderer"),
+      uiOutput("mov_avrg_pivot_renderer")
+    ),
+    mainPanel(
+      plotOutput(outputId = "plot")
+    )
   ),
-  uiOutput("id_selection_renderer"),
-  uiOutput("mov_avrg_pivot_renderer")
+  "Behind the scenes: station ID's and kommun's are fetched at start time from the API,
+  and temperatures are fetched on demand when a station is selected."
 )
 
 server <- function(input, output) {
@@ -31,7 +45,7 @@ server <- function(input, output) {
     {
       selectInput(
         inputId = "id_selection",
-        label = "Select the id of the station to fetch measurements",
+        label = "Station ID",
         choices = sort(row.names(df_stations[df_stations$kommun == input$kommun_selection,]))
       )
     }
@@ -48,7 +62,7 @@ server <- function(input, output) {
     }
   )
   output$plot = renderPlot({
-    title = "How cold was Xmas and New Year?"
+    title = "How cold were Xmas and New Year in Sweden?"
     temp_data = agent$getTForStation(input$id_selection,
                                      "2020-12-23-23-50",
                                      "2021-01-02-00-00")
