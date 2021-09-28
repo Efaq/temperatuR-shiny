@@ -35,8 +35,17 @@
 #'renderText
 #'renderUI
 #'
-
+#'CALL
+#'
+#'runGitHub("Efaq/temperatuR-shiny", ref = "main")
+#'
+devtools::install_github("https://github.com/Efaq/temperatuR")
+library(temperatuR)
 library(shiny)
+agent = temperaturNuAgent()
+agent$getInfoStations()
+
+vari = 2
 
 ui <- fluidPage(
   
@@ -60,9 +69,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
-  
+  print("rerunning this")
   output$plot = renderPlot(
     {
+      print(vari)
+      vari <<- vari + 1
       title = "random normal variables"
       hist(rnorm(input$num), main = title)
     }
