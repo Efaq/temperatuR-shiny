@@ -40,7 +40,7 @@ server <- function(input, output) {
     {
       sliderInput(
         inputId = "mov_avrg_pivot",
-        label = "Moving average parameter",
+        label = "Moving average range",
         min = 1,
         max = 48,
         value = 12
