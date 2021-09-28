@@ -39,45 +39,49 @@
 #'
 #'runGitHub("Efaq/temperatuR-shiny", ref = "main")
 #'
+
+#Boilerplate
 devtools::install_github("https://github.com/Efaq/temperatuR")
 library(temperatuR)
 library(shiny)
 agent = temperaturNuAgent()
-agent$getInfoStations()
+df_stations = agent$getInfoStations()
+sorted_kommun_list = sort(unique(df_stations$kommun))
 
-vari = 2
+
 
 ui <- fluidPage(
-  
-  sliderInput(
-    inputId = "num",
-    label = "Choose a number",
-    value = 25,
-    min = 1,
-    max = 100
-  ),
   selectInput(
-    inputId = "selection",
-    label = "Make a selection",
-    choices = c("1", "2", "3")
+    inputId = "kommun_selection",
+    label = "Select the kommun where the measurement station is placed",
+    choices = sorted_kommun_list
   ),
-  plotOutput(
-    outputId = "plot"
-    
-  )
-
+  uiOutput("id_selection"),
+  plotOutput(outputId = "plot")
+  
 )
 
 server <- function(input, output) {
-  print("rerunning this")
-  output$plot = renderPlot(
-    {
-      print(vari)
-      vari <<- vari + 1
-      title = "random normal variables"
-      hist(rnorm(input$num), main = title)
+  output$id_selection = renderUI({
+    selectInput(
+      inputId = "id_selection",
+      label = "Select the id of the station to fetch measurements",
+      choices = sort(row.names(df_stations[df_stations$kommun == input$kommun_selection,]))
+    )
+  })
+  output$plot = renderPlot({
+    title = "How was Xmas and New Year?"
+    temp_data = agent$getTForStation(input$id_selection,
+                                     "2020-12-23-00-00",
+                                     "2021-01-02-00-00")
+    temp_data = temp_data[!is.na(temp_data$temperatur), ]
+    if (nrow(temp_data) > 0) {
+      plot(temp_data$temperatur)
+    } else {
+      plot(0, 0)
     }
-  )
+    
+  })
   
 }
 
